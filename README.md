@@ -4,7 +4,7 @@ An interactive Capture The Flag (CTF) challenge focused on defusing a virtual ti
 
 ## 🎯 About the Project
 
-**Bomb Defusal CTF** is a training environment built to simulate real-world vulnerabilities and system analysis scenarios. Each "module" or "wire" of the bomb requires the use of specific techniques, such as network traffic analysis, web exploitation, cryptography, and reverse engineering.
+**Bomb Defusal CTF** is a training environment built to simulate real-world vulnerabilities and system analysis scenarios. Each "wire" of the bomb requires the use of specific techniques, such as network traffic analysis, web exploitation, cryptography, and reverse engineering.
 
 Can you disarm the system before it's too late?
 
