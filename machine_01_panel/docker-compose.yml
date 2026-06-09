@@ -5,6 +5,9 @@ services:
     build: .
     ports:
       - "8000:80"
+    volumes:
+      # Mapeia a pasta ./src local para a pasta do Apache no container
+      - ./src:/var/www/html
     networks:
       - ctf_net
 
