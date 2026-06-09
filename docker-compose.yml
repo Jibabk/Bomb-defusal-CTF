@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  bomb_panel:
+    build: .
+    ports:
+      - "8000:80"
+    networks:
+      - ctf_net
+
+networks:
+  ctf_net:
+    driver: bridge
