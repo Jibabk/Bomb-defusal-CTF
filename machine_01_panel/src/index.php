@@ -19,6 +19,10 @@ switch ($route) {
         (new BombController(new Bomb()))->show();
         break;
 
+    case 'wire':
+        (new BombController(new Bomb()))->wire((string) ($_GET['id'] ?? ''));
+        break;
+
     default:
         http_response_code(404);
         echo 'Página não encontrada.';

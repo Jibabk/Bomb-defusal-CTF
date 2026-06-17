@@ -1,359 +1,743 @@
 :root {
-      --steel-light: #c8cdd4;
-      --steel-mid:   #8e9199;
-      --steel-dark:  #3a3d42;
-      --steel-edge:  #1e2024;
-      --rivet:       #5a5f68;
-      --lcd-bg:      #0a1a0a;
-      --lcd-glow:    #00ff41;
-      --lcd-dim:     #003010;
-      --wire-sheath: 3px;
+    --case-edge: #08090b;
+    --case-dark: #343940;
+    --case-mid: #626a74;
+    --case-light: #9098a3;
+    --panel-dark: #111316;
+    --panel-edge: #030405;
+    --button-red: #ff2328;
+    --button-green: #35d05b;
+}
+
+* {
+    box-sizing: border-box;
+    letter-spacing: 0;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    align-items: center;
+    background-color: #7fa4d4;
+    background-image:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.16), transparent 38%),
+        repeating-linear-gradient(164deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 46px),
+        repeating-linear-gradient(24deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 54px);
+    color: #f4f6f7;
+    display: flex;
+    font-family: 'Share Tech Mono', monospace;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 28px;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    border: 0;
+}
+
+.bomb-stage {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    width: min(920px, calc(100vw - 56px));
+}
+
+.bomb-chassis {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, 0.2), transparent 16%),
+        linear-gradient(335deg, rgba(255, 255, 255, 0.13), transparent 22%),
+        linear-gradient(145deg, #6f7781 0%, #464c55 48%, #717985 100%);
+    border: 5px solid var(--case-edge);
+    border-radius: 8px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -4px 0 rgba(0, 0, 0, 0.35),
+        0 26px 34px rgba(36, 54, 82, 0.28),
+        0 8px 0 rgba(0, 0, 0, 0.18);
+    max-width: 920px;
+    min-width: 0;
+    padding: 60px 54px 44px;
+    position: relative;
+    width: 100%;
+}
+
+.bomb-chassis::before {
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 17px, rgba(255, 255, 255, 0.025) 17px 18px),
+        repeating-linear-gradient(90deg, transparent 0 28px, rgba(0, 0, 0, 0.05) 28px 29px);
+    border-radius: 4px;
+    content: "";
+    inset: 7px;
+    pointer-events: none;
+    position: absolute;
+}
+
+.bomb-layout {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(300px, 1.04fr) 88px minmax(280px, 0.96fr);
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.case-screw {
+    background:
+        radial-gradient(circle at 36% 30%, #d2d5d8 0 14%, #777f89 15% 54%, #30343b 55% 100%);
+    border: 4px solid #111319;
+    border-radius: 50%;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.32), 0 1px 0 rgba(255, 255, 255, 0.12);
+    height: 32px;
+    position: absolute;
+    width: 32px;
+    z-index: 0;
+}
+
+.case-screw::before,
+.case-screw::after,
+.wire-screw::before,
+.wire-screw::after {
+    background: #111319;
+    border-radius: 2px;
+    content: "";
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.case-screw::before,
+.wire-screw::before {
+    height: 4px;
+    width: 18px;
+}
+
+.case-screw::after,
+.wire-screw::after {
+    height: 18px;
+    width: 4px;
+}
+
+.screw-tl {
+    left: 18px;
+    top: 16px;
+}
+
+.screw-tr {
+    right: 18px;
+    top: 16px;
+}
+
+.screw-bl {
+    bottom: 16px;
+    left: 18px;
+}
+
+.screw-br {
+    bottom: 16px;
+    right: 18px;
+}
+
+.wire-bay,
+.control-panel,
+.vent-panel,
+.timer-screen,
+.entry-preview {
+    border: 4px solid var(--panel-edge);
+    box-shadow:
+        inset 0 2px 10px rgba(0, 0, 0, 0.78),
+        0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+.wire-bay {
+    background: linear-gradient(180deg, #25292e 0%, #111316 100%);
+    border-radius: 8px;
+    display: flex;
+    min-width: 0;
+    padding: 14px;
+}
+
+.wire-rack {
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 4px, transparent 4px calc(100% - 4px), rgba(255, 255, 255, 0.04) calc(100% - 4px) 100%),
+        linear-gradient(180deg, #171a1f 0%, #0e1013 100%);
+    border: 3px solid #050607;
+    border-radius: 8px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: space-between;
+    min-height: 368px;
+    min-width: 0;
+    padding: 9px 8px;
+}
+
+.wire-item {
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+    display: grid;
+    gap: 5px;
+    grid-template-columns: 22px 28px minmax(132px, 1fr) 28px 22px;
+    height: 40px;
+    min-width: 0;
+    text-decoration: none;
+}
+
+.wire-item.is-disabled {
+    cursor: default;
+    pointer-events: none;
+}
+
+.wire-item.is-disabled .wire-core {
+    opacity: 0.46;
+}
+
+.wire-item:hover .wire-core,
+.wire-item:focus-visible .wire-core {
+    filter: brightness(1.18);
+}
+
+.wire-item:focus-visible {
+    outline: 2px solid #f7dca6;
+    outline-offset: 2px;
+}
+
+.wire-screw {
+    background:
+        radial-gradient(circle at 35% 30%, #b9bec6 0 14%, #69717b 15% 54%, #2f3339 55% 100%);
+    border: 2px solid #08090b;
+    border-radius: 50%;
+    height: 22px;
+    position: relative;
+    width: 22px;
+}
+
+.wire-screw::before {
+    height: 3px;
+    width: 12px;
+}
+
+.wire-screw::after {
+    height: 12px;
+    width: 3px;
+}
+
+.wire-terminal {
+    background: linear-gradient(180deg, #8b929c 0%, #525963 48%, #2e333a 100%);
+    border: 2px solid #121419;
+    border-radius: 4px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.18),
+        0 2px 3px rgba(0, 0, 0, 0.58);
+    display: block;
+    height: 34px;
+    position: relative;
+}
+
+.wire-terminal::after {
+    background: radial-gradient(circle at 35% 35%, #d8dde4 0 18%, #666d76 19% 100%);
+    border: 1px solid #111319;
+    border-radius: 50%;
+    content: "";
+    height: 9px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 9px;
+}
+
+.wire-cable,
+.wire-cable svg {
+    display: block;
+    height: 34px;
+    min-width: 0;
+    width: 100%;
+}
+
+.wire-cable path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.wire-shadow {
+    stroke: rgba(0, 0, 0, 0.76);
+    stroke-width: 18;
+}
+
+.wire-core {
+    stroke: var(--wire-color);
+    stroke-width: 12;
+    transition: filter 0.18s ease;
+}
+
+.wire-shine {
+    opacity: 0.4;
+    stroke: rgba(255, 255, 255, 0.54);
+    stroke-width: 2;
+}
+
+.wire-cut-left,
+.wire-cut-right {
+    display: none;
+}
+
+.wire-item.is-cut .wire-whole {
+    display: none;
+}
+
+.wire-item.is-cut .wire-cut-left,
+.wire-item.is-cut .wire-cut-right {
+    display: block;
+}
+
+.wire-item.is-cut .wire-core {
+    opacity: 0.72;
+}
+
+.wire-red {
+    --wire-color: #ff171f;
+}
+
+.wire-orange {
+    --wire-color: #ff6b1b;
+}
+
+.wire-yellow {
+    --wire-color: #ffd11d;
+}
+
+.wire-green {
+    --wire-color: #37c93d;
+}
+
+.wire-blue {
+    --wire-color: #1d5dff;
+}
+
+.wire-purple {
+    --wire-color: #8226d4;
+}
+
+.wire-pink {
+    --wire-color: #f02593;
+}
+
+.wire-cyan {
+    --wire-color: #18d9d5;
+}
+
+.center-column {
+    align-items: start;
+    display: grid;
+    gap: 18px;
+    grid-template-rows: 86px 1fr;
+    justify-items: center;
+}
+
+.defuse-button {
+    align-items: center;
+    background: linear-gradient(145deg, #181b20, #343941);
+    border: 4px solid #07080a;
+    border-radius: 8px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.12),
+        0 2px 0 rgba(255, 255, 255, 0.09),
+        0 7px 10px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    display: flex;
+    height: 78px;
+    justify-content: center;
+    padding: 0;
+    width: 78px;
+}
+
+.defuse-button:focus-visible {
+    outline: 2px solid #f7dca6;
+    outline-offset: 3px;
+}
+
+.defuse-button:active:not(:disabled) .defuse-light {
+    transform: translateY(2px) scale(0.94);
+}
+
+.defuse-button:disabled {
+    cursor: default;
+}
+
+.defuse-light {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.54), transparent 0 17%),
+        linear-gradient(145deg, #ff4b4f 0%, var(--button-red) 45%, #aa0710 100%);
+    border: 3px solid #5d0308;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.22),
+        0 0 18px rgba(255, 35, 40, 0.72);
+    display: block;
+    height: 48px;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    width: 48px;
+}
+
+.defuse-button.is-safe .defuse-light {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.48), transparent 0 17%),
+        linear-gradient(145deg, #73f08e 0%, var(--button-green) 48%, #116d2f 100%);
+    border-color: #0b4e21;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.22),
+        0 0 20px rgba(53, 208, 91, 0.72);
+}
+
+.defuse-button.is-expired .defuse-light {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.08), transparent 0 17%),
+        linear-gradient(145deg, #16181b 0%, #07080a 55%, #000 100%);
+    border-color: #000;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.06),
+        0 0 12px rgba(0, 0, 0, 0.9);
+}
+
+.vent-panel {
+    align-items: center;
+    background: linear-gradient(180deg, #262b31 0%, #111418 100%);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 264px;
+    justify-content: center;
+    padding: 18px 14px;
+    width: 78px;
+}
+
+.vent-panel span {
+    background: #08090b;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+    display: block;
+    height: 4px;
+    width: 48px;
+}
+
+.control-panel {
+    background: linear-gradient(180deg, #2b3037 0%, #171a1f 100%);
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    grid-template-rows: auto auto 1fr;
+    min-width: 0;
+    padding: 12px;
+}
+
+.timer-screen {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+        #07090b;
+    border-radius: 6px;
+    display: flex;
+    height: 100px;
+    justify-content: center;
+    overflow: hidden;
+    padding: 5px 10px 0;
+}
+
+.lcd-digits {
+    color: #ff1921;
+    font-family: 'VT323', monospace;
+    font-size: 82px;
+    line-height: 0.9;
+    text-shadow:
+        0 0 12px rgba(255, 25, 33, 0.9),
+        0 0 28px rgba(255, 25, 33, 0.32);
+    white-space: nowrap;
+}
+
+.lcd-digits.panic {
+    animation: lcd-pulse 0.42s ease-in-out infinite alternate;
+}
+
+.lcd-digits.safe {
+    color: #43e46c;
+    font-size: 70px;
+    text-shadow:
+        0 0 12px rgba(67, 228, 108, 0.9),
+        0 0 28px rgba(67, 228, 108, 0.32);
+}
+
+@keyframes lcd-pulse {
+    from {
+        opacity: 1;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    to {
+        opacity: 0.58;
+    }
+}
 
+.hex-form {
+    background: #07090b;
+    border-radius: 6px;
+    height: 52px;
+    min-width: 0;
+    position: relative;
+}
+
+.hex-input {
+    height: 1px;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 1px;
+}
+
+.hex-input:focus {
+    outline: 0;
+}
+
+.hex-form:has(.hex-input.is-invalid) .entry-preview {
+    animation: invalid-shake 0.18s linear 2;
+    border-color: #1f5330;
+}
+
+.entry-preview {
+    align-items: center;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 35%),
+        #050708;
+    border-radius: 6px;
+    color: #0ee742;
+    display: flex;
+    font-family: 'VT323', monospace;
+    font-size: 46px;
+    height: 52px;
+    justify-content: flex-start;
+    line-height: 1;
+    overflow: hidden;
+    padding: 2px 16px 0;
+    text-shadow:
+        0 0 8px rgba(14, 231, 66, 0.8),
+        0 0 18px rgba(14, 231, 66, 0.28);
+    white-space: pre;
+    width: 100%;
+}
+
+@keyframes invalid-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(4px);
+    }
+}
+
+.keypad-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hex-key {
+    align-items: center;
+    aspect-ratio: 1 / 0.78;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 36%),
+        #d6cbb4;
+    border: 3px solid #08090b;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 -4px 0 rgba(0, 0, 0, 0.16),
+        inset 0 2px 0 rgba(255, 255, 255, 0.55),
+        0 3px 0 #050607;
+    color: #07080a;
+    cursor: pointer;
+    display: flex;
+    font-size: 38px;
+    justify-content: center;
+    line-height: 1;
+    min-height: 58px;
+    padding: 0;
+    text-align: center;
+}
+
+.hex-key:hover:not(:disabled),
+.hex-key:focus-visible:not(:disabled) {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 36%),
+        #dfd3ba;
+}
+
+.hex-key:focus-visible {
+    outline: 2px solid #232a31;
+    outline-offset: 2px;
+}
+
+.hex-key:active:not(:disabled) {
+    box-shadow:
+        inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        0 1px 0 #050607;
+    transform: translateY(2px);
+}
+
+.hex-key:disabled {
+    cursor: default;
+    opacity: 0.58;
+}
+
+.clear-key {
+    aspect-ratio: auto;
+    grid-column: 1 / -1;
+    min-height: 46px;
+    width: 100%;
+}
+
+@media (max-width: 840px) {
     body {
-      background-color: #1a1c1f;
-      background-image:
-        repeating-linear-gradient(0deg,   transparent, transparent 39px, rgba(0,0,0,.15) 39px, rgba(0,0,0,.15) 40px),
-        repeating-linear-gradient(90deg,  transparent, transparent 39px, rgba(0,0,0,.15) 39px, rgba(0,0,0,.15) 40px);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Share Tech Mono', monospace;
-      padding: 2rem 1rem;
+        padding: 16px;
     }
 
-    /* ── Carcaça principal ── */
     .bomb-chassis {
-      position: relative;
-      width: 100%;
-      max-width: 780px;
-      background:
-        linear-gradient(160deg, #b0b5bc 0%, #7a7f88 18%, #515660 45%, #3a3d44 55%, #52575f 78%, #9aa0a8 100%);
-      border-radius: 6px;
-      border: 2px solid var(--steel-edge);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.25),
-        inset 0 -1px 0 rgba(0,0,0,.6),
-        0 8px 40px rgba(0,0,0,.8),
-        0 2px 4px rgba(0,0,0,.9);
-      padding: 28px 28px 32px;
+        max-width: 560px;
+        padding: 48px 20px 28px;
     }
 
-    /* Textura de escovado */
-    .bomb-chassis::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 6px;
-      background-image: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 2px,
-        rgba(255,255,255,.018) 2px,
-        rgba(255,255,255,.018) 3px
-      );
-      pointer-events: none;
+    .bomb-stage {
+        width: calc(100vw - 32px);
     }
 
-    /* ── Parafusos de canto ── */
-    .screw {
-      position: absolute;
-      width: 22px;
-      height: 22px;
-    }
-    .screw svg { width: 100%; height: 100%; }
-    .screw-tl { top: 10px;  left: 10px; }
-    .screw-tr { top: 10px;  right: 10px; }
-    .screw-bl { bottom: 10px; left: 10px; }
-    .screw-br { bottom: 10px; right: 10px; }
-
-    /* ── Plaqueta de identificação ── */
-    .id-plate {
-      background: linear-gradient(135deg, #c8a84b 0%, #e8c96a 30%, #b8982e 60%, #d4b44a 100%);
-      border: 1px solid #7a6218;
-      border-radius: 3px;
-      padding: 5px 14px;
-      display: inline-block;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 2px 4px rgba(0,0,0,.5);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: #2a1f08;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      line-height: 1.6;
-    }
-    .id-plate .serial {
-      font-size: 8px;
-      letter-spacing: 1px;
-      opacity: .7;
-      display: block;
+    .bomb-layout {
+        grid-template-columns: 1fr;
     }
 
-    /* ── Seção superior: timer + plaqueta ── */
-    .top-section {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 22px;
-      gap: 16px;
+    .center-column {
+        align-items: center;
+        grid-template-columns: 88px minmax(0, 1fr);
+        grid-template-rows: auto;
     }
 
-    /* ── Display LCD ── */
-    .lcd-housing {
-      background: linear-gradient(145deg, #1e2124, #2a2d32, #16181a);
-      border: 2px solid #0d0f10;
-      border-radius: 4px;
-      padding: 10px 14px 14px;
-      box-shadow:
-        inset 0 2px 8px rgba(0,0,0,.9),
-        inset 0 0 2px rgba(0,0,0,.6),
-        0 1px 0 rgba(255,255,255,.1);
-      min-width: 260px;
+    .vent-panel {
+        flex-direction: row;
+        gap: 11px;
+        height: 78px;
+        padding: 14px;
+        width: 100%;
     }
-    .lcd-label {
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: #4a5060;
-      text-transform: uppercase;
-      margin-bottom: 6px;
+
+    .vent-panel span {
+        height: 48px;
+        width: 4px;
     }
-    .lcd-screen {
-      background-color: var(--lcd-bg);
-      border: 1px solid #001800;
-      border-radius: 2px;
-      padding: 10px 18px;
-      box-shadow: inset 0 0 12px rgba(0,0,0,.8);
-      position: relative;
-      overflow: hidden;
+
+    .timer-screen {
+        height: 88px;
     }
-    .lcd-screen::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0,0,0,.08) 3px,
-        rgba(0,0,0,.08) 4px
-      );
-      pointer-events: none;
-    }
+
     .lcd-digits {
-      font-family: 'VT323', monospace;
-      font-size: 58px;
-      color: var(--lcd-glow);
-      text-shadow: 0 0 8px rgba(0,255,65,.6), 0 0 20px rgba(0,255,65,.2);
-      letter-spacing: 4px;
-      line-height: 1;
-      text-align: center;
-    }
-    .lcd-digits.panic {
-      color: #ff2200;
-      text-shadow: 0 0 8px rgba(255,34,0,.7), 0 0 20px rgba(255,34,0,.3);
-      animation: lcd-pulse .4s ease-in-out infinite alternate;
-    }
-    @keyframes lcd-pulse { from { opacity: 1; } to { opacity: .6; } }
-
-    .lcd-status {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--lcd-dim);
-      text-align: center;
-      margin-top: 6px;
-      text-shadow: 0 0 4px rgba(0,255,65,.3);
-    }
-    .lcd-status.active { color: var(--lcd-glow); }
-
-    /* ── Painel de controle ── */
-    .panel-label {
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: #3a3f48;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-      padding-left: 4px;
+        font-size: 68px;
     }
 
-    /* ── Trilho de fios ── */
-    .wire-panel {
-      background: linear-gradient(180deg, #1a1c1f 0%, #141618 100%);
-      border: 1px solid #0d0e10;
-      border-radius: 4px;
-      padding: 20px 16px;
-      box-shadow: inset 0 2px 10px rgba(0,0,0,.9);
+    .lcd-digits.safe {
+        font-size: 58px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
     }
 
-    .wire-row {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    .bomb-stage {
+        width: calc(100vw - 16px);
     }
 
-    /* ── Fio individual ── */
+    .bomb-chassis {
+        padding: 46px 12px 24px;
+    }
+
+    .case-screw {
+        height: 28px;
+        width: 28px;
+    }
+
+    .screw-tl,
+    .screw-bl {
+        left: 14px;
+    }
+
+    .screw-tr,
+    .screw-br {
+        right: 14px;
+    }
+
+    .wire-bay,
+    .control-panel {
+        padding: 9px;
+    }
+
+    .wire-rack {
+        min-height: 328px;
+    }
+
     .wire-item {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      cursor: pointer;
-      position: relative;
+        grid-template-columns: 18px 24px minmax(0, 1fr) 24px 18px;
+        height: 36px;
     }
 
-    /* Terminal de entrada (PCB) */
-    .wire-terminal-left,
-    .wire-terminal-right {
-      width: 18px;
-      height: 28px;
-      background: linear-gradient(180deg, #787c82 0%, #4a4e54 40%, #3a3d42 100%);
-      border-radius: 2px;
-      border: 1px solid #222428;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 3px rgba(0,0,0,.5);
-      flex-shrink: 0;
-      position: relative;
-    }
-    .wire-terminal-left::after,
-    .wire-terminal-right::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #aab0b8, #555a62);
-      border: 1px solid #1a1c1f;
+    .wire-screw {
+        height: 18px;
+        width: 18px;
     }
 
-    /* Cabo do fio */
-    .wire-cable {
-      flex: 1;
-      height: 14px;
-      position: relative;
-      display: flex;
-      align-items: center;
+    .wire-terminal {
+        height: 30px;
     }
 
-    .wire-cable-body {
-      width: 100%;
-      height: 12px;
-      border-radius: 6px;
-      position: relative;
-      box-shadow:
-        inset 0 3px 0 rgba(255,255,255,.18),
-        inset 0 -3px 0 rgba(0,0,0,.45),
-        0 2px 6px rgba(0,0,0,.6);
-      transition: filter .15s, transform .1s;
+    .center-column {
+        grid-template-columns: 76px minmax(0, 1fr);
     }
 
-    /* Cores dos fios */
-    .wire-red    .wire-cable-body { background: linear-gradient(180deg, #e83030 0%, #c01818 35%, #8a0808 65%, #c01818 100%); }
-    .wire-blue   .wire-cable-body { background: linear-gradient(180deg, #4488ee 0%, #2255cc 35%, #113399 65%, #2255cc 100%); }
-    .wire-green  .wire-cable-body { background: linear-gradient(180deg, #44cc44 0%, #228822 35%, #115511 65%, #228822 100%); }
-    .wire-yellow .wire-cable-body { background: linear-gradient(180deg, #ffee22 0%, #ddaa00 35%, #997700 65%, #ddaa00 100%); }
-    .wire-black  .wire-cable-body { background: linear-gradient(180deg, #555860 0%, #2e3035 35%, #18191c 65%, #2e3035 100%); }
-    .wire-white  .wire-cable-body { background: linear-gradient(180deg, #f0f2f5 0%, #d0d3d8 35%, #a8acb2 65%, #d0d3d8 100%); }
-    .wire-purple .wire-cable-body { background: linear-gradient(180deg, #9944dd 0%, #6622aa 35%, #441177 65%, #6622aa 100%); }
-    .wire-orange .wire-cable-body { background: linear-gradient(180deg, #ff8822 0%, #dd5500 35%, #993300 65%, #dd5500 100%); }
-
-    /* Listras de identificação no meio do fio */
-    .wire-cable-body::before {
-      content: '';
-      position: absolute;
-      top: 3px; bottom: 3px;
-      left: 30%; right: 30%;
-      border-left: 2px solid rgba(255,255,255,.12);
-      border-right: 2px solid rgba(255,255,255,.12);
+    .defuse-button {
+        height: 68px;
+        width: 68px;
     }
 
-    /* Hover e estado cortado */
-    .wire-item:hover .wire-cable-body {
-      filter: brightness(1.25);
-      transform: scaleY(1.08);
-    }
-    .wire-item:active .wire-cable-body {
-      filter: brightness(.7);
-    }
-    .wire-item.cut .wire-cable-body {
-      opacity: .25;
-    }
-    .wire-item.cut .wire-cable-body::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: -4px; bottom: -4px;
-      width: 4px;
-      margin-left: -2px;
-      background: #0d0e10;
-      border-radius: 1px;
+    .defuse-light {
+        height: 42px;
+        width: 42px;
     }
 
-    .wire-label {
-      font-size: 9px;
-      letter-spacing: 1px;
-      color: #3a3f48;
-      text-transform: uppercase;
-      width: 46px;
-      flex-shrink: 0;
-      text-align: right;
-      padding-right: 8px;
+    .timer-screen {
+        height: 78px;
     }
 
-    /* ── Grade de 2 colunas para os fios ── */
-    .wire-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px 24px;
+    .lcd-digits {
+        font-size: 58px;
     }
 
-    /* ── Rodapé do painel ── */
-    .panel-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(0,0,0,.4);
+    .lcd-digits.safe {
+        font-size: 50px;
     }
-    .warning-strip {
-      display: flex;
-      gap: 3px;
-      align-items: center;
-    }
-    .warning-block {
-      width: 18px;
-      height: 10px;
-      border-radius: 1px;
-    }
-    .warning-block:nth-child(odd)  { background: #f5c400; }
-    .warning-block:nth-child(even) { background: #1a1c1f; }
 
-    .status-indicators {
-      display: flex;
-      gap: 10px;
-      align-items: center;
+    .hex-key {
+        font-size: 30px;
+        min-height: 48px;
     }
-    .status-led {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      border: 1px solid rgba(0,0,0,.4);
-    }
-    .led-armed {
-      background: #ff2200;
-      box-shadow: 0 0 6px rgba(255,34,0,.8);
-      animation: led-blink 1.2s ease-in-out infinite;
-    }
-    .led-safe { background: #335533; }
-    @keyframes led-blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
 
-    .status-text {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: #ff4422;
-      text-shadow: 0 0 6px rgba(255,68,34,.5);
-    }
+}
