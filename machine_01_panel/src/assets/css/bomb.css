@@ -487,6 +487,13 @@ button {
     }
 }
 
+.hex-entry-row {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 176px minmax(0, 1fr);
+    min-width: 0;
+}
+
 .hex-form {
     background: #07090b;
     border-radius: 6px;
@@ -603,8 +610,9 @@ button {
 
 .clear-key {
     aspect-ratio: auto;
-    grid-column: 1 / -1;
-    min-height: 46px;
+    font-size: 30px;
+    height: 52px;
+    min-height: 0;
     width: 100%;
 }
 
@@ -738,6 +746,12 @@ button {
     .hex-key {
         font-size: 30px;
         min-height: 48px;
+    }
+
+    .clear-key {
+        font-size: 26px;
+        height: 52px;
+        min-height: 0;
     }
 
 }

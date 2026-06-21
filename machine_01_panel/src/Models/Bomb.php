@@ -10,56 +10,62 @@ final class Bomb
     private const WIRES = [
         [
             'id' => 'red',
-            'name' => 'VERMELHO',
+            'name' => 'RED',
             'code' => 'A1B2C3',
         ],
         [
             'id' => 'orange',
-            'name' => 'LARANJA',
+            'name' => 'ORANGE',
             'code' => '9F8E7D',
         ],
         [
             'id' => 'yellow',
-            'name' => 'AMARELO',
+            'name' => 'YELLOW',
             'code' => 'FFEEDD',
         ],
         [
             'id' => 'green',
-            'name' => 'VERDE',
+            'name' => 'GREEN',
             'code' => '0F1E2D',
         ],
         [
             'id' => 'blue',
-            'name' => 'AZUL',
+            'name' => 'BLUE',
             'code' => '1234AB',
         ],
         [
             'id' => 'purple',
-            'name' => 'ROXO',
+            'name' => 'PURPLE',
             'code' => 'C0FFEE',
         ],
         [
             'id' => 'pink',
-            'name' => 'ROSA',
+            'name' => 'PINK',
             'code' => 'DEADC0',
         ],
         [
             'id' => 'cyan',
-            'name' => 'CIANO',
+            'name' => 'CYAN',
             'code' => '5AFECA',
         ],
     ];
 
-    public function startIfNeeded(): void
+    public function start(): void
     {
-        if (!isset($_SESSION[self::SESSION_START_KEY])) {
-            $_SESSION[self::SESSION_START_KEY] = time();
-        }
+        $_SESSION[self::SESSION_START_KEY] = time();
+        $_SESSION[self::SESSION_CUT_KEY] = [];
+    }
+
+    public function isStarted(): bool
+    {
+        return isset($_SESSION[self::SESSION_START_KEY]);
     }
 
     public function getRemainingSeconds(): int
     {
-        $this->startIfNeeded();
+        if (!$this->isStarted()) {
+            return self::DURATION_SECONDS;
+        }
 
         $elapsed = time() - (int) $_SESSION[self::SESSION_START_KEY];
 
@@ -93,6 +99,10 @@ final class Bomb
 
     public function cutWireByCode(string $code): array
     {
+        if (!$this->isStarted()) {
+            return ['status' => 'not_started'];
+        }
+
         if ($this->isExpired()) {
             return ['status' => 'expired'];
         }
@@ -167,8 +177,6 @@ final class Bomb
 
     private function applyWrongAttemptPenalty(): void
     {
-        $this->startIfNeeded();
-
         $_SESSION[self::SESSION_START_KEY] = (int) $_SESSION[self::SESSION_START_KEY] - 60;
     }
 }

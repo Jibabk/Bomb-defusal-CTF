@@ -10,7 +10,7 @@ final class View
         $viewFile = __DIR__ . '/../Views/' . $view . '.php';
 
         if (!file_exists($viewFile)) {
-            throw new RuntimeException('View não encontrada: ' . $view);
+            throw new RuntimeException('View not found: ' . $view);
         }
 
         require __DIR__ . '/../Views/layouts/main.php';

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   let totalSeconds = Number(document.body.dataset.remaining || 0);
+  const isStarted = document.body.dataset.started === '1';
   const isDefused = document.body.dataset.defused === '1';
   const startsExpired = document.body.dataset.expired === '1';
 
@@ -28,6 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTimer() {
+    if (!isStarted) {
+      display.textContent = '50:00';
+      disableWireLinks();
+
+      return;
+    }
+
     if (isDefused) {
       display.textContent = 'SAFE';
       display.classList.add('safe');
@@ -77,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderTimer();
-  if (!isDefused && !startsExpired) {
+  if (isStarted && !isDefused && !startsExpired) {
     setInterval(tick, 1000);
   }
 });

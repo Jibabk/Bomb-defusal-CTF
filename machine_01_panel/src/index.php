@@ -15,6 +15,18 @@ switch ($route) {
         (new HomeController())->index();
         break;
 
+    case 'start':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(404);
+            echo 'Page not found.';
+            break;
+        }
+
+        $bomb = new Bomb();
+        $bomb->start();
+        header('Location: index.php?route=bomb', true, 303);
+        break;
+
     case 'bomb':
         (new BombController(new Bomb()))->show();
         break;
@@ -25,6 +37,6 @@ switch ($route) {
 
     default:
         http_response_code(404);
-        echo 'Página não encontrada.';
+        echo 'Page not found.';
         break;
 }
