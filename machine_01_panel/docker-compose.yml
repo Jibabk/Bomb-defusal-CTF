@@ -1,16 +1,4 @@
 services:
-  bomb_panel:
-    build: .
-    ports:
-      - "8000:80"
-    environment:
-      BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
-    volumes:
-      - ./src:/var/www/html
-      - bomb_data:/var/lib/bomb-data
-    networks:
-      - ctf_net
-
   timer_job:
     build: .
     command: php /var/www/html/Jobs/timer_job.php
@@ -21,6 +9,20 @@ services:
       - ./src:/var/www/html
       - bomb_data:/var/lib/bomb-data
     restart: unless-stopped
+    networks:
+      - ctf_net
+
+  bomb_panel:
+    build: .
+    depends_on:
+      - timer_job
+    ports:
+      - "8000:80"
+    environment:
+      BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
+    volumes:
+      - ./src:/var/www/html
+      - bomb_data:/var/lib/bomb-data
     networks:
       - ctf_net
 

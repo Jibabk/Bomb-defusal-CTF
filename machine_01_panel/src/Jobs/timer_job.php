@@ -13,8 +13,7 @@ require_once __DIR__ . '/../Models/ChallengeTimer.php';
 set_time_limit(0);
 
 $timer = new ChallengeTimer(Database::connection());
-
-fwrite(STDOUT, "Timer job started.\n");
+$timer->initialize();
 
 while (true) {
     $timerStatus = $timer->snapshot();
@@ -26,6 +25,5 @@ while (true) {
             $timer->markExpired();
         }
     }
-
     sleep(1);
 }

@@ -167,6 +167,6 @@ final class Bomb
 
     private function applyWrongAttemptPenalty(): void
     {
-    $this->timer->applyWrongAttemptPenalty($remainingSeconds);
+    $this->timer->applyWrongAttemptPenalty();
     }
 }
