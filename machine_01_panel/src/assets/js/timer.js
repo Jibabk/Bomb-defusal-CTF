@@ -91,11 +91,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const timerStatus = await response.json();
+      const wasDefused = isDefused;
+      const wasExpired = isExpired;
 
       totalSeconds = Number(timerStatus.remainingSeconds || 0);
       isStarted = timerStatus.isStarted === true;
       isDefused = timerStatus.isDefused === true;
       isExpired = timerStatus.isExpired === true;
+
+      if (!wasDefused && isDefused) {
+        window.BombAudio?.stopBeep();
+        window.BombAudio?.play('defuse');
+      } else if (!wasExpired && isExpired) {
+        window.BombAudio?.stopBeep();
+        window.BombAudio?.play('explosion');
+      } else if (isStarted && !isDefused && !isExpired) {
+        window.BombAudio?.startBeep();
+      }
+
       renderTimer();
 
       if ((!isStarted || isDefused || isExpired) && refreshInterval !== null) {

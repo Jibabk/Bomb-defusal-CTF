@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 final class Bomb
 {
-    private const DURATION_SECONDS = 3000;
     private const SESSION_CUT_KEY = 'bomb_cut_wires';
 
     private const WIRES = [
@@ -60,7 +59,7 @@ final class Bomb
             return;
         }
 
-        $this->timer->start(self::DURATION_SECONDS);
+        $this->timer->start();
         $_SESSION[self::SESSION_CUT_KEY] = [];
     }
 
@@ -80,10 +79,6 @@ final class Bomb
     public function getTimerStatus(): array
     {
         $timerStatus = $this->timer->snapshot();
-
-        if (!$timerStatus['is_challenge_started']) {
-            $timerStatus['remaining_seconds'] = self::DURATION_SECONDS;
-        }
 
         $timerStatus['is_time_expired'] = $timerStatus['is_challenge_started']
             && ($timerStatus['is_time_expired'] || $timerStatus['remaining_seconds'] <= 0);
@@ -111,14 +106,14 @@ final class Bomb
         return null;
     }
 
-    public function cutWireByCode(string $code): void
+    public function cutWireByCode(string $code): string
     {
         if (!$this->isStarted()) {
-            return;
+            return 'not_started';
         }
 
         if ($this->isExpired()) {
-            return;
+            return 'expired';
         }
 
         $normalizedCode = strtoupper(trim($code));
@@ -126,7 +121,7 @@ final class Bomb
         if (!preg_match('/^[0-9A-F]{6}$/', $normalizedCode)) {
             $this->applyWrongAttemptPenalty();
 
-            return;
+            return 'invalid';
         }
 
         foreach (self::WIRES as $wire) {
@@ -135,17 +130,19 @@ final class Bomb
             }
 
             if ($this->isWireCut($wire['id'])) {
-                return;
+                return 'already_cut';
             }
 
             $cutWires = $this->getCutWireIds();
             $cutWires[] = $wire['id'];
             $_SESSION[self::SESSION_CUT_KEY] = array_values(array_unique($cutWires));
 
-            return;
+            return 'cut';
         }
 
         $this->applyWrongAttemptPenalty();
+
+        return 'not_found';
     }
 
     public function isDefused(): bool
@@ -167,6 +164,6 @@ final class Bomb
 
     private function applyWrongAttemptPenalty(): void
     {
-    $this->timer->applyWrongAttemptPenalty();
+        $this->timer->applyWrongAttemptPenalty();
     }
 }

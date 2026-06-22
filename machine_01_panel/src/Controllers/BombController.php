@@ -9,6 +9,7 @@ final class BombController
 
     public function show(): void
     {
+        $audioEvent = '';
         $timerStatus = $this->bomb->getTimerStatus();
         $isStarted = $timerStatus['is_challenge_started'];
 
@@ -19,7 +20,11 @@ final class BombController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->bomb->cutWireByCode((string) ($_POST['hex_code'] ?? ''));
+            $result = $this->bomb->cutWireByCode((string) ($_POST['hex_code'] ?? ''));
+
+            if (in_array($result, ['invalid', 'not_found'], true)) {
+                $audioEvent = 'error';
+            }
         }
 
         $timerStatus = $this->bomb->getTimerStatus();
@@ -27,11 +32,23 @@ final class BombController
         $isDefused = $this->bomb->isDefused();
         $isExpired = $isStarted && !$isDefused && $timerStatus['is_time_expired'];
 
+        if (
+            $_SERVER['REQUEST_METHOD'] === 'POST'
+            && in_array(($result ?? ''), ['invalid', 'not_found'], true)
+            && $isExpired
+        ) {
+            $audioEvent = 'explosion';
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($result ?? '') === 'cut') {
+            $audioEvent = $isDefused ? 'defuse' : 'success';
+        }
+
         View::render('bomb', [
             'title' => 'Bomb Defusal',
             'styles' => ['assets/css/bomb.css'],
-            'scripts' => ['assets/js/timer.js', 'assets/js/wires.js'],
-            'bodyAttributes' => 'data-remaining="' . $remaining . '" data-started="' . ($isStarted ? '1' : '0') . '" data-defused="' . ($isDefused ? '1' : '0') . '" data-expired="' . ($isExpired ? '1' : '0') . '"',
+            'scripts' => ['assets/js/audio.js', 'assets/js/timer.js', 'assets/js/wires.js'],
+            'bodyAttributes' => 'data-remaining="' . $remaining . '" data-started="' . ($isStarted ? '1' : '0') . '" data-defused="' . ($isDefused ? '1' : '0') . '" data-expired="' . ($isExpired ? '1' : '0') . '" data-audio-event="' . $audioEvent . '"',
             'wires' => $this->bomb->getWires(),
             'isStarted' => $isStarted,
             'isDefused' => $isDefused,

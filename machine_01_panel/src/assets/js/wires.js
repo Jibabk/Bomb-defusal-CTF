@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const preview = document.getElementById('entry-preview');
   const keys = document.querySelectorAll('[data-key]');
   const clearButton = document.querySelector('[data-clear]');
+  const defuseButton = document.getElementById('defuse-button');
 
   if (!form || !input) {
     return;
@@ -30,7 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
   });
 
+  function bindButtonSound(button) {
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener('pointerdown', () => {
+      window.BombAudio?.buttonPress();
+    });
+  }
+
   keys.forEach((key) => {
+    bindButtonSound(key);
+
     key.addEventListener('click', () => {
       if (input.disabled || input.value.length >= 6) {
         return;
@@ -44,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (clearButton) {
+    bindButtonSound(clearButton);
+
     clearButton.addEventListener('click', () => {
       if (input.disabled) {
         return;
@@ -55,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderPreview();
     });
   }
+
+  bindButtonSound(defuseButton);
 
   form.addEventListener('submit', () => {
     input.value = normalize(input.value);
