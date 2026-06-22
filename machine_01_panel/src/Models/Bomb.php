@@ -4,7 +4,6 @@ declare(strict_types=1);
 final class Bomb
 {
     private const DURATION_SECONDS = 3000;
-    private const SESSION_START_KEY = 'bomb_start';
     private const SESSION_CUT_KEY = 'bomb_cut_wires';
 
     private const WIRES = [
@@ -50,31 +49,46 @@ final class Bomb
         ],
     ];
 
+    public function __construct(private ?ChallengeTimer $timer = null)
+    {
+        $this->timer ??= new ChallengeTimer(Database::connection());
+    }
+
     public function start(): void
     {
-        $_SESSION[self::SESSION_START_KEY] = time();
+        if ($this->timer->snapshot()['is_challenge_started']) {
+            return;
+        }
+
+        $this->timer->start(self::DURATION_SECONDS);
         $_SESSION[self::SESSION_CUT_KEY] = [];
     }
 
     public function isStarted(): bool
     {
-        return isset($_SESSION[self::SESSION_START_KEY]);
-    }
-
-    public function getRemainingSeconds(): int
-    {
-        if (!$this->isStarted()) {
-            return self::DURATION_SECONDS;
-        }
-
-        $elapsed = time() - (int) $_SESSION[self::SESSION_START_KEY];
-
-        return max(0, self::DURATION_SECONDS - $elapsed);
+        return $this->timer->snapshot()['is_challenge_started'];
     }
 
     public function isExpired(): bool
     {
-        return $this->getRemainingSeconds() <= 0;
+        $timerStatus = $this->timer->snapshot();
+
+        return $timerStatus['is_challenge_started']
+            && ($timerStatus['is_time_expired'] || $timerStatus['remaining_seconds'] <= 0);
+    }
+
+    public function getTimerStatus(): array
+    {
+        $timerStatus = $this->timer->snapshot();
+
+        if (!$timerStatus['is_challenge_started']) {
+            $timerStatus['remaining_seconds'] = self::DURATION_SECONDS;
+        }
+
+        $timerStatus['is_time_expired'] = $timerStatus['is_challenge_started']
+            && ($timerStatus['is_time_expired'] || $timerStatus['remaining_seconds'] <= 0);
+
+        return $timerStatus;
     }
 
     public function getWires(): array
@@ -97,14 +111,14 @@ final class Bomb
         return null;
     }
 
-    public function cutWireByCode(string $code): array
+    public function cutWireByCode(string $code): void
     {
         if (!$this->isStarted()) {
-            return ['status' => 'not_started'];
+            return;
         }
 
         if ($this->isExpired()) {
-            return ['status' => 'expired'];
+            return;
         }
 
         $normalizedCode = strtoupper(trim($code));
@@ -112,7 +126,7 @@ final class Bomb
         if (!preg_match('/^[0-9A-F]{6}$/', $normalizedCode)) {
             $this->applyWrongAttemptPenalty();
 
-            return ['status' => 'invalid'];
+            return;
         }
 
         foreach (self::WIRES as $wire) {
@@ -121,46 +135,22 @@ final class Bomb
             }
 
             if ($this->isWireCut($wire['id'])) {
-                return [
-                    'status' => 'already_cut',
-                    'wire' => $wire,
-                ];
+                return;
             }
 
             $cutWires = $this->getCutWireIds();
             $cutWires[] = $wire['id'];
             $_SESSION[self::SESSION_CUT_KEY] = array_values(array_unique($cutWires));
 
-            return [
-                'status' => 'cut',
-                'wire' => $wire,
-            ];
+            return;
         }
 
         $this->applyWrongAttemptPenalty();
-
-        return ['status' => 'not_found'];
-    }
-
-    public function getCutCount(): int
-    {
-        return count($this->getCutWireIds());
-    }
-
-    public function getTotalWires(): int
-    {
-        return count(self::WIRES);
     }
 
     public function isDefused(): bool
     {
-        return $this->getCutCount() >= $this->getTotalWires();
-    }
-
-    public function reset(): void
-    {
-        unset($_SESSION[self::SESSION_START_KEY]);
-        unset($_SESSION[self::SESSION_CUT_KEY]);
+        return count($this->getCutWireIds()) >= count(self::WIRES);
     }
 
     private function getCutWireIds(): array
@@ -177,6 +167,6 @@ final class Bomb
 
     private function applyWrongAttemptPenalty(): void
     {
-        $_SESSION[self::SESSION_START_KEY] = (int) $_SESSION[self::SESSION_START_KEY] - 60;
+    $this->timer->applyWrongAttemptPenalty($remainingSeconds);
     }
 }

@@ -3,11 +3,30 @@ services:
     build: .
     ports:
       - "8000:80"
+    environment:
+      BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
       - ./src:/var/www/html
+      - bomb_data:/var/lib/bomb-data
+    networks:
+      - ctf_net
+
+  timer_job:
+    build: .
+    command: php /var/www/html/Jobs/timer_job.php
+    user: www-data
+    environment:
+      BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
+    volumes:
+      - ./src:/var/www/html
+      - bomb_data:/var/lib/bomb-data
+    restart: unless-stopped
     networks:
       - ctf_net
 
 networks:
   ctf_net:
     driver: bridge
+
+volumes:
+  bomb_data:

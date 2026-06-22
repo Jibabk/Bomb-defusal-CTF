@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   let totalSeconds = Number(document.body.dataset.remaining || 0);
-  const isStarted = document.body.dataset.started === '1';
-  const isDefused = document.body.dataset.defused === '1';
-  const startsExpired = document.body.dataset.expired === '1';
+  let isStarted = document.body.dataset.started === '1';
+  let isDefused = document.body.dataset.defused === '1';
+  let isExpired = document.body.dataset.expired === '1';
 
   const display = document.getElementById('timer-display');
   const defuseButton = document.getElementById('defuse-button');
   const input = document.getElementById('hex-input');
   const controls = document.querySelectorAll('[data-key], [data-clear]');
   const wireLinks = document.querySelectorAll('[data-wire-link]');
+  let refreshInterval = null;
 
   if (!display) {
     return;
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (totalSeconds <= 0) {
+    if (isExpired || totalSeconds <= 0) {
       display.textContent = '00:00';
       display.classList.add('panic');
 
@@ -76,16 +77,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function tick() {
-    if (totalSeconds > 0) {
-      totalSeconds--;
-    }
+  async function refreshTimer() {
+    try {
+      const response = await fetch('index.php?route=timer', {
+        headers: {
+          Accept: 'application/json',
+        },
+        cache: 'no-store',
+      });
 
-    renderTimer();
+      if (!response.ok) {
+        return;
+      }
+
+      const timerStatus = await response.json();
+
+      totalSeconds = Number(timerStatus.remainingSeconds || 0);
+      isStarted = timerStatus.isStarted === true;
+      isDefused = timerStatus.isDefused === true;
+      isExpired = timerStatus.isExpired === true;
+      renderTimer();
+
+      if ((!isStarted || isDefused || isExpired) && refreshInterval !== null) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    } catch (error) {
+      return;
+    }
   }
 
   renderTimer();
-  if (isStarted && !isDefused && !startsExpired) {
-    setInterval(tick, 1000);
+  if (isStarted && !isDefused && !isExpired) {
+    refreshTimer();
+    refreshInterval = setInterval(refreshTimer, 1000);
   }
 });
