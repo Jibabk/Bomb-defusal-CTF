@@ -1,11 +1,11 @@
 (() => {
   const audioPaths = {
-    beep: 'assets/audio/beep.wav',
-    buttonPress: 'assets/audio/button_press.wav',
-    defuse: 'assets/audio/defuse.wav',
-    error: 'assets/audio/error.wav',
-    explosion: 'assets/audio/explosion.wav',
-    success: 'assets/audio/success.wav',
+    beep: 'Assets/audio/beep.wav',
+    buttonPress: 'Assets/audio/button_press.wav',
+    defuse: 'Assets/audio/defuse.wav',
+    error: 'Assets/audio/error.wav',
+    explosion: 'Assets/audio/explosion.wav',
+    success: 'Assets/audio/success.wav',
   };
 
   const sounds = {};

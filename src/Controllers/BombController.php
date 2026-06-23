@@ -48,8 +48,8 @@ final class BombController
 
         View::render('bomb', [
             'title' => 'Bomb Defusal',
-            'styles' => ['assets/css/bomb.css'],
-            'scripts' => ['assets/js/audio.js', 'assets/js/timer.js', 'assets/js/wires.js'],
+            'styles' => ['Assets/css/bomb.css'],
+            'scripts' => ['Assets/js/audio.js', 'Assets/js/timer.js', 'Assets/js/wires.js'],
             'bodyAttributes' => 'data-remaining="' . $remaining . '" data-started="' . ($isStarted ? '1' : '0') . '" data-defused="' . ($isDefused ? '1' : '0') . '" data-expired="' . ($isExpired ? '1' : '0') . '" data-audio-event="' . $audioEvent . '"',
             'wires' => $this->bomb->getWires(),
             'isStarted' => $isStarted,
@@ -106,6 +106,11 @@ final class BombController
             }
 
         }
+        $wireContent = match (strtolower($wire['name'])) {
+            'red' => $this->readChallengeFile('base64.txt', 'red'),
+            'orange' => $this->readChallengeFile('hash.txt', 'orange'),
+            default => $wire['code'],
+        };
 
         View::render('wire', [
             'title' => $wire['name'],
@@ -113,6 +118,18 @@ final class BombController
             'scripts' => [],
             'bodyAttributes' => '',
             'wire' => $wire,
+            'wireContent' => $wireContent,
         ]);
+    }
+
+    private function readChallengeFile(string $filename, string $wireName): string
+    {
+        $content = file_get_contents(__DIR__ . '/../Content/' . $filename);
+
+        if ($content === false) {
+            throw new RuntimeException('Unable to read ' . $wireName . ' wire challenge.');
+        }
+
+        return $content;
     }
 }
