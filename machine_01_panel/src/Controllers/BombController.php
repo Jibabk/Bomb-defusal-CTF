@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 final class BombController
 {
+    private const AUTHORIZED_AGENT = 'BombDefuser';
+
     public function __construct(private Bomb $bomb)
     {
     }
@@ -86,6 +88,23 @@ final class BombController
             http_response_code(404);
             echo 'Page not found.';
             return;
+        }
+
+        if ($wire['id'] === 'pink') {
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+ 
+            if ($userAgent !== self::AUTHORIZED_AGENT) {
+                http_response_code(403);
+                View::render('denied', [
+                    'title'          => 'Acesso Negado',
+                    'styles'         => [],
+                    'scripts'        => [],
+                    'bodyAttributes' => '',
+                    'userAgent'      => $userAgent,
+                ]);
+                return;
+            }
+
         }
 
         View::render('wire', [
