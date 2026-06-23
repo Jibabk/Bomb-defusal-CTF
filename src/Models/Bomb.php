@@ -7,42 +7,42 @@ final class Bomb
 
     private const WIRES = [
         [
-            'id' => 'red',
+            'id' => '005ff71e968dab954f43c6fd124be029d049616f1c08c44fdbec298275db946e',
             'name' => 'RED',
-            'code' => 'A1B2C3',
+            'code' => 'AF32CD',
         ],
         [
-            'id' => 'orange',
+            'id' => '5c29987df4a6d17087f9ce83f86a220f6ae02a4b186255ddd007b0f9e5cfb20d',
             'name' => 'ORANGE',
-            'code' => '9F8E7D',
+            'code' => 'C0FFEE',
         ],
         [
-            'id' => 'yellow',
+            'id' => '68bab9978b059e97ae4fbabe62b0e96d483f4772fbbfad419e99f44c617efbe8',
             'name' => 'YELLOW',
             'code' => 'FFEEDD',
         ],
         [
-            'id' => 'green',
+            'id' => '69820cbea23c67a4a28c97f457e7938fe86f506a793b74ff7700eadde1045686',
             'name' => 'GREEN',
             'code' => '0F1E2D',
         ],
         [
-            'id' => 'blue',
+            'id' => '199a19ea7e91f903f7674f71ac3de71bcf1590e86c75c80ae6fb44f5f9ae0049',
             'name' => 'BLUE',
             'code' => '1234AB',
         ],
         [
-            'id' => 'purple',
+            'id' => '65091a6092f69feb2b9042146528a6f6819bf8690fea9753573e5c5273f6fcff',
             'name' => 'PURPLE',
-            'code' => 'C0FFEE',
+            'code' => '9F8E7D',
         ],
         [
-            'id' => 'pink',
+            'id' => 'd05d9d4a9011e93a6b326aa80d7ab075d7976fb8cc6f6682c3973f7b3d41eade',
             'name' => 'PINK',
             'code' => 'DEADC0',
         ],
         [
-            'id' => 'cyan',
+            'id' => 'c903f7d76b38fd80c8dcb56c2707e5c39c8b39fbec0df00dea80cca28c4d1057',
             'name' => 'CYAN',
             'code' => '5AFECA',
         ],

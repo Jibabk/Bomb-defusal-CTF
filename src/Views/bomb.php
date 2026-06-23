@@ -17,8 +17,9 @@ $buttonLabel = !$isStarted ? 'Challenge not started' : ($isDefused ? 'Bomb defus
                     <?php foreach ($wires as $wire): ?>
                         <?php
                         $wireDisabled = !$isStarted || $isExpired || $isDefused || $wire['cut'];
-                        $wireClass = 'wire-item wire-' . htmlspecialchars($wire['id'], ENT_QUOTES, 'UTF-8') . ($wire['cut'] ? ' is-cut' : '') . ($wireDisabled ? ' is-disabled' : '');
                         $wireName = htmlspecialchars($wire['name'], ENT_QUOTES, 'UTF-8');
+                        $wireClassName = htmlspecialchars(strtolower($wire['name']), ENT_QUOTES, 'UTF-8');
+                        $wireClass = 'wire-item wire-' . $wireClassName . ($wire['cut'] ? ' is-cut' : '') . ($wireDisabled ? ' is-disabled' : '');
                         ?>
                         <?php if ($wireDisabled): ?>
                             <span

@@ -7,7 +7,7 @@ final class HomeController
     {
         View::render('home', [
             'title' => 'Bomb Defusal CTF',
-            'styles' => ['assets/css/home.css'],
+            'styles' => ['Assets/css/home.css'],
             'scripts' => [],
             'bodyAttributes' => '',
         ]);
