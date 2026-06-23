@@ -25,6 +25,23 @@ services:
       - bomb_data:/var/lib/bomb-data
     networks:
       - ctf_net
+  
+  ftp_server:
+    image: fauria/vsftpd
+    ports:
+      - "21:21"
+      - "20:20"
+      - "21100-21110:21100-21110"
+    environment:
+      - FTP_USER=Junior
+      - FTP_PASS=password123!
+      - PASV_MIN_PORT=21100
+      - PASV_MAX_PORT=21110
+      - PASV_ADDRESS=127.0.0.1
+    volumes:
+      - ./ftp_data:/home/vsftpd/Junior
+    networks:
+      - ctf_net
 
 networks:
   ctf_net:
