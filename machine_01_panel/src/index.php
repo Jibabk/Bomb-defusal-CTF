@@ -9,6 +9,7 @@ require_once __DIR__ . '/Models/ChallengeTimer.php';
 require_once __DIR__ . '/Models/Bomb.php';
 require_once __DIR__ . '/Controllers/HomeController.php';
 require_once __DIR__ . '/Controllers/BombController.php';
+require_once __DIR__ . '/Controllers/SecretController.php';
 
 $route = $_GET['route'] ?? 'home';
 
@@ -40,6 +41,11 @@ switch ($route) {
     case 'wire':
         (new BombController(new Bomb()))->wire((string) ($_GET['id'] ?? ''));
         break;
+
+    case 'secret': 
+        (new SecretController(new Bomb()))->index();
+        break;
+    
 
     default:
         http_response_code(404);
