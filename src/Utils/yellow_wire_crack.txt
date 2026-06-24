@@ -1,0 +1,7 @@
+ffmpeg -i challenge.mkv -vn -c:a pcm_s16le extracted_audio.wav
+steghide extract -sf extracted_audio.wav -p ""
+cat audio_password.txt
+binwalk -e challenge.mkv
+find _challenge.mkv.extracted -type f -name "*.zip"
+unzip _challenge.mkv.extracted/*.zip
+cat yellow_code.txt
