@@ -1,4 +1,8 @@
-<!-- Junior built a login screen for this wire. He also trusts the browser a little too much. -->
+<!-- Hi, Secret Agent 🤓. -->
+<!-- Well, our incredible friendship ends here 😐. -->
+<!-- I know this may be disappointing for you, but from now on I won’t be able to go easy on you, since our goals are diametrically opposed 😔. -->
+<!-- Knowing your incredible skills, I created this flawless validation that will prevent you from moving forward. -->
+<!-- I wish you bad luck from this point on 😝. -->
 <main class="login-shell">
     <section class="login-panel" aria-label="Wire login">
         <?php if ($wireContent !== ''): ?>
