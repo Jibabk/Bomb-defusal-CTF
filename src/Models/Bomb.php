@@ -24,7 +24,7 @@ final class Bomb
         [
             'id' => '69820cbea23c67a4a28c97f457e7938fe86f506a793b74ff7700eadde1045686',
             'name' => 'GREEN',
-            'code' => '0F1E2D',
+            'code' => '071EBD',
         ],
         [
             'id' => '199a19ea7e91f903f7674f71ac3de71bcf1590e86c75c80ae6fb44f5f9ae0049',

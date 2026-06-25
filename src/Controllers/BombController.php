@@ -88,17 +88,29 @@ final class BombController
             return;
         }
 
-        $wireContent = match (strtolower($wire['name'])) {
+        $wireName = strtolower($wire['name']);
+        $wireContent = match ($wireName) {
             'red' => $this->readChallengeFile('base64.txt', 'red'),
             'orange' => $this->readChallengeFile('hash.txt', 'orange'),
+            'green' => $this->greenWireContent($wire),
             default => $wire['code'],
+        };
+
+        $styles = match ($wireName) {
+            'yellow' => ['Assets/css/wires/yellow.css'],
+            'green' => ['Assets/css/wires/green.css'],
+            default => [],
+        };
+        $scripts = match ($wireName) {
+            'green' => ['Assets/js/wires/green.js'],
+            default => [],
         };
 
         View::render('wire', [
             'title' => $wire['name'],
-            'styles' => [],
-            'scripts' => [],
-            'bodyAttributes' => '',
+            'styles' => $styles,
+            'scripts' => $scripts,
+            'bodyAttributes' => 'class="wire-page"',
             'wire' => $wire,
             'wireContent' => $wireContent,
         ]);
@@ -113,5 +125,20 @@ final class BombController
         }
 
         return $content;
+    }
+
+    private function greenWireContent(array $wire): string
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return '';
+        }
+
+        $login = new GreenWireLogin(Database::connection());
+        $user = $login->authenticate(
+            (string) ($_POST['username'] ?? ''),
+            (string) ($_POST['password'] ?? '')
+        );
+
+        return $user === null ? '' : $wire['code'];
     }
 }

@@ -7,6 +7,7 @@ require_once __DIR__ . '/Core/View.php';
 require_once __DIR__ . '/Core/Database.php';
 require_once __DIR__ . '/Models/ChallengeTimer.php';
 require_once __DIR__ . '/Models/Bomb.php';
+require_once __DIR__ . '/Models/GreenWireLogin.php';
 require_once __DIR__ . '/Controllers/HomeController.php';
 require_once __DIR__ . '/Controllers/BombController.php';
 

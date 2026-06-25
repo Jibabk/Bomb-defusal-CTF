@@ -1,0 +1,17 @@
+html,
+body.wire-page {
+    background: #000;
+    margin: 0;
+    padding: 0;
+}
+
+body.wire-page {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+body.wire-page video {
+    display: block;
+}
