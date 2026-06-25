@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 final class BombController
 {
+    private const AUTHORIZED_AGENT = 'BombDefuser';
     public function __construct(private Bomb $bomb)
     {
     }
@@ -106,6 +107,23 @@ final class BombController
             default => [],
         };
 
+        if ($wire['name'] === 'PURPLE') {
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+ 
+            if ($userAgent !== self::AUTHORIZED_AGENT) {
+                http_response_code(403);
+                View::render('denied', [
+                    'title'          => 'Access Denied',
+                    'styles'         => [],
+                    'scripts'        => [],
+                    'bodyAttributes' => '',
+                    'userAgent'      => $userAgent,
+                ]);
+                return;
+            }
+
+        }
+
         View::render('wire', [
             'title' => $wire['name'],
             'styles' => $styles,
@@ -116,6 +134,28 @@ final class BombController
         ]);
     }
 
+    public function secret(): void
+    {
+        $id='199a19ea7e91f903f7674f71ac3de71bcf1590e86c75c80ae6fb44f5f9ae0049'; 
+        if (!$this->bomb->isStarted() || $this->bomb->isDefused() || $this->bomb->isExpired()) {
+            http_response_code(404);
+            echo 'Page not found.';
+            return;
+        }
+
+        $wire = $this->bomb->findWire($id);
+        $styles = [];
+        $scripts = [];
+
+        View::render('secret', [
+            'title' => $wire['name'],
+            'styles' => $styles,
+            'scripts' => $scripts,
+            'bodyAttributes' => 'class="wire-page"',
+            'wire' => $wire,
+            'wireContent' => $wire['code'],
+        ]);
+    }
     private function readChallengeFile(string $filename, string $wireName): string
     {
         $content = file_get_contents(__DIR__ . '/../Content/' . $filename);
