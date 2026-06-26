@@ -156,6 +156,18 @@ final class BombController
             'wireContent' => $wire['code'],
         ]);
     }
+
+    public function defuseCode(): void
+    {
+        header('Content-Type: application/json');
+        if (!$this->bomb->isDefused()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Forbidden']);
+            return;
+        }
+        echo json_encode(['code' => 'D3F347']);
+    }
+
     private function readChallengeFile(string $filename, string $wireName): string
     {
         $content = file_get_contents(__DIR__ . '/../Content/' . $filename);

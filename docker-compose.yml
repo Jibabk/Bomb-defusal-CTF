@@ -18,6 +18,7 @@ services:
       - timer_job
     ports:
       - "8000:80"
+      - "2222:22"
     environment:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
