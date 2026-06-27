@@ -3,10 +3,15 @@ FROM php:8.2-apache
 COPY . /var/www/html/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
     libsqlite3-dev \
     openssh-server \
     && docker-php-ext-install pdo_sqlite \
     && rm -rf /var/lib/apt/lists/*
+
+RUN gcc /var/www/html/src/Jobs/detonate.c -o /usr/local/bin/detonate \
+    && chown root:root /usr/local/bin/detonate \
+    && chmod 4755 /usr/local/bin/detonate
 
 RUN mkdir -p /var/run/sshd
 

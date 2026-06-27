@@ -7,6 +7,8 @@ services:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
       - ./src:/var/www/html
+      - ./secret:/root/secret_seed:ro
+      - secret_data:/root/secret
       - bomb_data:/var/lib/bomb-data
     networks:
       - ctf_net
@@ -22,6 +24,7 @@ services:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
       - ./src:/var/www/html
+      - secret_data:/root/secret
       - bomb_data:/var/lib/bomb-data
     networks:
       - ctf_net
@@ -49,3 +52,4 @@ networks:
 
 volumes:
   bomb_data:
+  secret_data:

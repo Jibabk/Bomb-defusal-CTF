@@ -15,6 +15,7 @@ set_time_limit(0);
 $databasePath = getenv('BOMB_DB_PATH') ?: __DIR__ . '/../storage/bomb.sqlite';
 $timer = new ChallengeTimer(Database::connection());
 $timer->initialize();
+seedSecretDirectory();
 
 foreach (array_merge([dirname($databasePath)], glob($databasePath . '*') ?: []) as $path) {
     @chown($path, 'www-data');
@@ -50,5 +51,16 @@ while (true) {
 
 if ($shouldDetonate) {
     sleep(5);
-    exec('rm -rf ' . escapeshellarg('/secret'));
+    exec('/usr/local/bin/detonate');
+}
+
+function seedSecretDirectory(): void
+{
+    if (!is_dir('/root/secret_seed') || !is_dir('/root/secret')) {
+        return;
+    }
+
+    exec('find ' . escapeshellarg('/root/secret') . ' -mindepth 1 -maxdepth 1 -exec rm -rf {} +');
+    exec('cp -a ' . escapeshellarg('/root/secret_seed/.') . ' ' . escapeshellarg('/root/secret'));
+    file_put_contents('/root/secret/.seeded', date(DATE_ATOM) . "\n");
 }
