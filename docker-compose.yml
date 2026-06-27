@@ -1,12 +1,12 @@
 services:
   detonator:
     build: .
-    command: php /var/www/html/Jobs/detonator.php
+    command: php /var/www/app/Jobs/detonator.php
     user: root
     environment:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
-      - ./src:/var/www/html
+      - ./src:/var/www/app
       - ./secret:/root/secret_seed:ro
       - secret_data:/root/secret
       - bomb_data:/var/lib/bomb-data
@@ -23,7 +23,7 @@ services:
     environment:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
-      - ./src:/var/www/html
+      - ./src:/var/www/app
       - secret_data:/root/secret
       - bomb_data:/var/lib/bomb-data
     networks:

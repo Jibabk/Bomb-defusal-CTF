@@ -45,7 +45,7 @@ switch ($route) {
     case 'secret':
         (new BombController(new Bomb()))->secret();
         break;
-        
+
     case 'defuse_code':
         (new BombController(new Bomb()))->defuseCode();
         break;

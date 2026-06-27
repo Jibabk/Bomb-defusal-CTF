@@ -170,7 +170,7 @@ final class BombController
 
     private function readChallengeFile(string $filename, string $wireName): string
     {
-        $content = file_get_contents(__DIR__ . '/../Content/' . $filename);
+        $content = file_get_contents(__DIR__ . '/../public/Content/' . $filename);
 
         if ($content === false) {
             throw new RuntimeException('Unable to read ' . $wireName . ' wire challenge.');
