@@ -93,8 +93,12 @@ final class BombController
         $wireContent = match ($wireName) {
             'red' => $this->readChallengeFile('base64.txt', 'red'),
             'orange' => $this->readChallengeFile('hash.txt', 'orange'),
+            'yellow' => '',
             'green' => $this->greenWireContent($wire),
-            default => $wire['code'],
+            'blue' => '',
+            'pink' => '',
+            'purple' => $wire['code'],
+            'cyan' => '',
         };
 
         $styles = match ($wireName) {

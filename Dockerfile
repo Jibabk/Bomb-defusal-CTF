@@ -21,7 +21,7 @@ RUN gcc -o /usr/local/bin/detonate /var/www/app/Jobs/detonate.c \
 
 RUN mkdir -p /var/run/sshd
 
-RUN useradd -m -s /bin/bash junior \
+RUN useradd -m -s /bin/bash -G www-data junior \
     && mkdir -p /home/junior/.ssh \
     && chmod 700 /home/junior/.ssh
 
@@ -36,7 +36,7 @@ RUN mkdir -p /var/lib/bomb-data \
 
 RUN echo "CTF{b0mb_h4s_b33n_d3fus3d}" > /root/flag.txt
 
-RUN echo "CTF{b0mb_h4s_b33n_p4n73d}" > /home/junior/user.txt \
+RUN echo "CTF{b0mb_h4s_b33n_pl4n73d}" > /home/junior/user.txt \
     && chown junior:junior /home/junior/user.txt \
     && chmod 400 /home/junior/user.txt
 

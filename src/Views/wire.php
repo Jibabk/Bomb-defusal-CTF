@@ -16,6 +16,4 @@
     <?php require __DIR__ . '/wire/pink.php'; ?>
 <?php elseif ($wireName === 'cyan'): ?>
     <?php require __DIR__ . '/wire/cyan.php'; ?>
-<?php else: ?>
-    <?= htmlspecialchars($wireContent, ENT_QUOTES, 'UTF-8') ?>
 <?php endif; ?>
