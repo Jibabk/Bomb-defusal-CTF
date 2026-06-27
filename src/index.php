@@ -42,7 +42,7 @@ switch ($route) {
         (new BombController(new Bomb()))->wire((string) ($_GET['id'] ?? ''));
         break;
 
-    case 'secret':
+    case 'hermanos':
         (new BombController(new Bomb()))->secret();
         break;
 
