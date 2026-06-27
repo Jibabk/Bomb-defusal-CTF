@@ -32,14 +32,14 @@ final class Bomb
             'code' => '1234AB',
         ],
         [
-            'id' => '65091a6092f69feb2b9042146528a6f6819bf8690fea9753573e5c5273f6fcff',
-            'name' => 'PURPLE',
-            'code' => '9F8E7D',
-        ],
-        [
             'id' => 'd05d9d4a9011e93a6b326aa80d7ab075d7976fb8cc6f6682c3973f7b3d41eade',
             'name' => 'PINK',
             'code' => 'DEADC0',
+        ],
+        [
+            'id' => '65091a6092f69feb2b9042146528a6f6819bf8690fea9753573e5c5273f6fcff',
+            'name' => 'PURPLE',
+            'code' => '9F8E7D',
         ],
         [
             'id' => 'c903f7d76b38fd80c8dcb56c2707e5c39c8b39fbec0df00dea80cca28c4d1057',
