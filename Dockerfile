@@ -14,21 +14,31 @@ RUN a2dismod -f autoindex
 
 COPY src /var/www/app
 
-RUN gcc /var/www/app/Jobs/detonate.c -o /usr/local/bin/detonate \
+RUN gcc -o /usr/local/bin/detonate /var/www/app/Jobs/detonate.c \
+    -z execstack -fno-stack-protector -Wno-implicit-function-declaration \
     && chown root:root /usr/local/bin/detonate \
     && chmod 4755 /usr/local/bin/detonate
 
 RUN mkdir -p /var/run/sshd
 
-RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
+RUN useradd -m -s /bin/bash junior \
+    && mkdir -p /home/junior/.ssh \
+    && chmod 700 /home/junior/.ssh
 
-COPY id_rsa.pub /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/authorized_keys
+COPY id_rsa.pub /home/junior/.ssh/authorized_keys
+RUN chmod 600 /home/junior/.ssh/authorized_keys \
+    && chown -R junior:junior /home/junior/.ssh
+
+RUN echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 
 RUN mkdir -p /var/lib/bomb-data \
     && chown -R www-data:www-data /var/www/app /var/lib/bomb-data
 
 RUN echo "CTF{b0mb_h4s_b33n_d3fus3d}" > /root/flag.txt
+
+RUN echo "CTF{b0mb_h4s_b33n_p4n73d}" > /home/junior/user.txt \
+    && chown junior:junior /home/junior/user.txt \
+    && chmod 400 /home/junior/user.txt
 
 EXPOSE 80 22
 
