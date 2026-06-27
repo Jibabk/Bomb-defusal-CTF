@@ -1,1 +1,1 @@
-<?= htmlspecialchars($wireContent, ENT_QUOTES, 'UTF-8') ?>
+<image src="Content/trophy.png">
