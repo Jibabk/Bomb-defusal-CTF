@@ -1,21 +1,20 @@
 services:
-  timer_job:
+  detonator:
     build: .
-    command: php /var/www/html/Jobs/timer_job.php
-    user: www-data
+    command: php /var/www/html/Jobs/detonator.php
+    user: root
     environment:
       BOMB_DB_PATH: /var/lib/bomb-data/bomb.sqlite
     volumes:
       - ./src:/var/www/html
       - bomb_data:/var/lib/bomb-data
-    restart: unless-stopped
     networks:
       - ctf_net
 
   bomb_panel:
     build: .
     depends_on:
-      - timer_job
+      - detonator
     ports:
       - "8000:80"
       - "2222:22"

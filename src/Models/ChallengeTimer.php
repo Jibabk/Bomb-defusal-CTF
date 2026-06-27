@@ -19,7 +19,8 @@ final class ChallengeTimer
                 id TEXT PRIMARY KEY,
                 is_challenge_started INTEGER NOT NULL DEFAULT 0 CHECK (is_challenge_started IN (0, 1)),
                 remaining_seconds INTEGER NOT NULL DEFAULT 3000,
-                is_time_expired INTEGER NOT NULL DEFAULT 0 CHECK (is_time_expired IN (0, 1))
+                is_time_expired INTEGER NOT NULL DEFAULT 0 CHECK (is_time_expired IN (0, 1)),
+                is_challenge_defused INTEGER NOT NULL DEFAULT 0 CHECK (is_challenge_defused IN (0, 1))
             )'
         );
 
@@ -41,7 +42,7 @@ final class ChallengeTimer
     public function snapshot(): array
     {
         $statement = $this->database->prepare(
-            'SELECT is_challenge_started, remaining_seconds, is_time_expired
+            'SELECT is_challenge_started, remaining_seconds, is_time_expired, is_challenge_defused
              FROM challenge_timer
              WHERE id = :id'
         );
@@ -53,6 +54,7 @@ final class ChallengeTimer
             'is_challenge_started' => (bool) $row['is_challenge_started'],
             'remaining_seconds' => (int) $row['remaining_seconds'],
             'is_time_expired' => (bool) $row['is_time_expired'],
+            'is_challenge_defused' => (bool) $row['is_challenge_defused'],
         ];
     }
 
@@ -93,6 +95,16 @@ final class ChallengeTimer
             'UPDATE challenge_timer
              SET remaining_seconds = 0,
                  is_time_expired = 1
+             WHERE id = :id'
+        );
+        $statement->execute(['id' => self::TIMER_ID]);
+    }
+
+    public function markDefused(): void
+    {
+        $statement = $this->database->prepare(
+            'UPDATE challenge_timer
+             SET is_challenge_defused = 1
              WHERE id = :id'
         );
         $statement->execute(['id' => self::TIMER_ID]);

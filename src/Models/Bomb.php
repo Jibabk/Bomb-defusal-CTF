@@ -137,6 +137,10 @@ final class Bomb
             $cutWires[] = $wire['id'];
             $_SESSION[self::SESSION_CUT_KEY] = array_values(array_unique($cutWires));
 
+            if (count($_SESSION[self::SESSION_CUT_KEY]) >= count(self::WIRES)) {
+                $this->timer->markDefused();
+            }
+
             return 'cut';
         }
 
@@ -147,7 +151,8 @@ final class Bomb
 
     public function isDefused(): bool
     {
-        return count($this->getCutWireIds()) >= count(self::WIRES);
+        return $this->timer->snapshot()['is_challenge_defused']
+            || count($this->getCutWireIds()) >= count(self::WIRES);
     }
 
     private function getCutWireIds(): array
